@@ -10,7 +10,7 @@ This project is a work-in-progress. Things might subject to change without notic
 3. [Arduino IDE](https://www.arduino.cc/en/software)
 
 ## Quick Start
-[video demo]() of the steps below
+[video demo](https://youtu.be/hdSwhNWhLZQ) of the steps below
 1. Download code from Github
     - `git clone https://github.com/augcog/ROAR-Junior-Racing.git && cd ROAR-Junior-Racing`
 2. Install dependencies
