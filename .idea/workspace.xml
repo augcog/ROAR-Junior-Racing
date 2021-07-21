@@ -20,11 +20,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e7e59de-18ee-4bc3-bb3f-db0234b5c47e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/findBLE.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game/game.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/junior_runner_ble.py" beforeDir="false" afterPath="$PROJECT_DIR$/junior_runner_ble.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,7 +56,7 @@
       <option name="presentableId" value="Default" />
       <updated>1626841508833</updated>
       <workItem from="1626841510261" duration="51000" />
-      <workItem from="1626841625423" duration="1388000" />
+      <workItem from="1626841625423" duration="1451000" />
     </task>
     <servers />
   </component>
