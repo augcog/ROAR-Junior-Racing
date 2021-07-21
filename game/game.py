@@ -75,6 +75,7 @@ class Game:
                     self.should_continue, (self.motor_left, self.motor_right) = self.update_pygame(clock)
                     self.update_ble()
                     self.execute_user_action()
+                    self.debug_state()
                 await asyncio.sleep(self.rate, loop=self.loop)
         except KeyboardInterrupt:
             self.logger.info("Keyboard Interrupt detected, safely quitting.")
@@ -84,10 +85,13 @@ class Game:
         finally:
             self.on_finish()
 
+    def debug_state(self):
+        self.logger.info(f"{self.aX},{self.aY},{self.aZ},{self.roll},{self.pitch},{self.yaw},{self.motor_left},{self.motor_right}")
+
     def update_ble(self):
         self.aX = self.ble_connection.acc_x
-        self.aY = self.ble_connection.acc_x
-        self.aZ = self.ble_connection.acc_x
+        self.aY = self.ble_connection.acc_y
+        self.aZ = self.ble_connection.acc_z
         self.roll = self.ble_connection.roll
         self.pitch = self.ble_connection.pitch
         self.yaw = self.ble_connection.yaw

@@ -1,5 +1,3 @@
-
-
 import logging
 from typing import List
 import asyncio
@@ -27,7 +25,10 @@ def createBLETasks(ble_connection: BLEConnection) -> List:
         List of task that asyncio can start
     """
     return [loop.create_task(ble_connection.connectHelper()),
-            loop.create_task(ble_connection.startSendControl())]
+            loop.create_task(ble_connection.startSendControl()),
+            loop.create_task(ble_connection.startUpdateAcc()),
+            loop.create_task(ble_connection.startupdateOrientation()),
+            ]
 
 
 def createGameTask(game: Game) -> List:
