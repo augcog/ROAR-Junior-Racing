@@ -20,8 +20,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e7e59de-18ee-4bc3-bb3f-db0234b5c47e" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/utilities.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bluetooth/ble.py" beforeDir="false" afterPath="$PROJECT_DIR$/bluetooth/ble.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game/game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/junior_runner_ble.py" beforeDir="false" afterPath="$PROJECT_DIR$/junior_runner_ble.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboard_control.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard_control.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/roar_junior_arduino.ino" beforeDir="false" afterPath="$PROJECT_DIR$/roar_junior_arduino/roar_junior_arduino.ino" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,6 +47,12 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.path.for.package.eslint" value="project" />
+    <property name="node.js.path.for.package.tslint" value="project" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="SshConsoleOptionsProvider">
@@ -58,7 +70,8 @@
       <updated>1626841508833</updated>
       <workItem from="1626841510261" duration="51000" />
       <workItem from="1626841625423" duration="1483000" />
-      <workItem from="1626843390875" duration="829000" />
+      <workItem from="1626843390875" duration="851000" />
+      <workItem from="1626890100935" duration="14139000" />
     </task>
     <servers />
   </component>

@@ -26,8 +26,9 @@ def createBLETasks(ble_connection: BLEConnection) -> List:
     """
     return [loop.create_task(ble_connection.connectHelper()),
             loop.create_task(ble_connection.startSendControl()),
-            loop.create_task(ble_connection.startUpdateAcc()),
-            loop.create_task(ble_connection.startupdateOrientation()),
+            # loop.create_task(ble_connection.startUpdateAcc()),
+            # loop.create_task(ble_connection.startupdateOrientation()),
+            # loop.create_task(ble_connection.startUpdateTrackingAndUltrasonic())
             ]
 
 
@@ -57,7 +58,7 @@ if __name__ == '__main__':
         loop=loop,
         device_addr=deviceUUID,
         debug=logging.DEBUG)
-    game = Game(ble_connection=connection, loop=loop, rate=0.025, debug_level=logging.DEBUG)
+    game = Game(ble_connection=connection, loop=loop, rate=0.1, debug_level=logging.DEBUG)
     tasks = []
     tasks.extend(createBLETasks(ble_connection=connection))
     tasks.extend(createGameTask(game=game))

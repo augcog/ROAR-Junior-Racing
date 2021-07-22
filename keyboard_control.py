@@ -12,8 +12,10 @@ class JuniorKeyboardControl(object):
         self._right_motor_increment = right_motor_increment
         self.left_motor = 0
         self.right_motor = 0
+        self.left_motor_mode = True
+        self.right_motor_mode = True
 
-    def parse_events(self, clock: pygame.time.Clock) -> Tuple[bool, Tuple[int, int]]:
+    def parse_events(self, clock: pygame.time.Clock) -> Tuple[bool, Tuple[int, int, bool, bool]]:
         """
         Outer layer will call this function on every step.
 
@@ -29,10 +31,10 @@ class JuniorKeyboardControl(object):
         key_pressed = pygame.key.get_pressed()
         for event in events:
             if event.type == pygame.QUIT or key_pressed[K_q] or key_pressed[K_ESCAPE]:
-                return False, (self.left_motor, self.right_motor)
+                return False, (self.left_motor, self.right_motor, self.left_motor_mode, self.right_motor_mode)
 
         self._parse_control_keys(key_pressed)
-        return True, (self.left_motor, self.right_motor)
+        return True, (self.left_motor, self.right_motor, self.left_motor_mode, self.right_motor_mode)
 
     def _parse_control_keys(self, keys):
         """
@@ -53,3 +55,13 @@ class JuniorKeyboardControl(object):
 
         elif keys[K_s]:
             self.left_motor = max(self.left_motor - self._left_motor_increment, 0)
+
+        if keys[K_a]:
+            self.left_motor_mode = True
+        elif keys[K_d]:
+            self.left_motor_mode = False
+
+        if keys[K_LEFT]:
+            self.right_motor_mode = True
+        elif keys[K_RIGHT]:
+            self.right_motor_mode = False

@@ -3,7 +3,8 @@ from bleak import *
 from bleak.backends.device import BLEDevice
 from typing import List, Optional, Union
 import logging
-
+from utilities import VehicleState
+import time
 
 class BLEConnection:
     def __init__(self,
@@ -19,6 +20,13 @@ class BLEConnection:
                  roll_char_rx_uuid: str = "00000000-0000-0000-0000-000000000007",
                  pitch_char_rx_uuid: str = "00000000-0000-0000-0000-000000000008",
                  yaw_char_rx_uuid: str = "00000000-0000-0000-0000-000000000009",
+                 motor_left_mode_tx_uuid: str = "00000000-0000-0000-0000-000000000010",
+                 motor_right_mode_tx_uuid: str = "00000000-0000-0000-0000-000000000011",
+                 motor_left_mode_rx_uuid: str = "00000000-0000-0000-0000-000000000012",
+                 motor_right_mode_rx_uuid: str = "00000000-0000-0000-0000-000000000013",
+                 left_line_tracking_rx_uuid: str = "00000000-0000-0000-0000-000000000014",
+                 right_line_tracking_rx_uuid: str = "00000000-0000-0000-0000-000000000015",
+                 ultrasonic_rx_uuid: str = "00000000-0000-0000-0000-000000000016",
                  debug: int = logging.INFO):
         self.logger = logging.getLogger("BLEConnection")
         self.logger.setLevel(debug)
@@ -35,6 +43,15 @@ class BLEConnection:
         self.pitch_char_rx_uuid = pitch_char_rx_uuid
         self.yaw_char_rx_uuid = yaw_char_rx_uuid
 
+        self.motor_left_mode_tx_uuid = motor_left_mode_tx_uuid
+        self.motor_right_mode_tx_uuid = motor_right_mode_tx_uuid
+        self.motor_left_mode_rx_uuid = motor_left_mode_rx_uuid
+        self.motor_right_mode_rx_uuid = motor_right_mode_rx_uuid
+
+        self.left_line_tracking_rx_uuid = left_line_tracking_rx_uuid
+        self.right_line_tracking_rx_uuid = right_line_tracking_rx_uuid
+        self.ultrasonic_rx_uuid = ultrasonic_rx_uuid
+
         self.client = BleakClient(self.device_addr, loop=self.loop)
 
         # state variables
@@ -47,12 +64,21 @@ class BLEConnection:
         self.motor_right_tx_data: int = 0
         self.motor_left_rx_data: int = 0
         self.motor_right_rx_data: int = 0
+        self.motor_left_mode_rx: bool = True
+        self.motor_right_mode_rx: bool = True
+        self.motor_left_mode_tx: bool = True
+        self.motor_right_mode_tx: bool = True
+
         self.acc_x: float = 0
         self.acc_y: float = 0
         self.acc_z: float = 0
         self.roll: float = 0
         self.pitch: float = 0
         self.yaw: float = 0
+
+        self.is_left_tracking: bool = False
+        self.is_right_tracking: bool = False
+        self.ultrasonic_distance: int = 300
 
     def on_disconnect(self):
         """
@@ -102,6 +128,18 @@ class BLEConnection:
         """
         return f"{self.acc_x}, {self.acc_y}, {self.acc_z} | {self.roll}, {self.pitch}, {self.yaw} | {self.motor_left_rx_data}, {self.motor_right_rx_data}"
 
+    async def getTrackingAndUltrasonicData(self):
+        """
+        Send BLE call for getting left and right line tracking sensor data
+        NOTE: will overwrite original data
+        :return:
+            None
+        """
+        # print("Getting Tracking Data")
+        self.is_left_tracking = bool(ord(await self.client.read_gatt_char(self.left_line_tracking_rx_uuid)))
+        self.is_right_tracking = bool(ord(await self.client.read_gatt_char(self.right_line_tracking_rx_uuid)))
+        self.ultrasonic_distance = int.from_bytes(await self.client.read_gatt_char(self.ultrasonic_rx_uuid), "little", signed=True)
+
     async def get_motor_data(self):
         """
         Send BLE call for getting motor data
@@ -109,8 +147,12 @@ class BLEConnection:
         :return:
             None
         """
-        self.motor_left_rx_data = int(await self.client.read_gatt_char(self.motor_left_rx_uuid))
-        self.motor_right_rx_data = int(await self.client.read_gatt_char(self.motor_right_rx_uuid))
+        self.motor_left_rx_data = int.from_bytes(await self.client.read_gatt_char(self.motor_left_rx_uuid),
+                                                 "little", signed=True)
+        self.motor_right_rx_data = int.from_bytes(await self.client.read_gatt_char(self.motor_right_rx_uuid),
+                                                  "little", signed=True)
+        self.motor_left_mode_rx = bool(await self.client.read_gatt_char(self.motor_left_mode_rx_uuid))
+        self.motor_right_mode_rx = bool(await self.client.read_gatt_char(self.motor_right_mode_rx_uuid))
 
     async def get_acc(self):
         """
@@ -144,6 +186,10 @@ class BLEConnection:
                                           bytes(f"{self.motor_left_tx_data}", encoding='utf-8'))
         await self.client.write_gatt_char(self.motor_right_tx_uuid,
                                           bytes(f"{self.motor_right_tx_data}", encoding='utf-8'))
+        await self.client.write_gatt_char(self.motor_left_mode_tx_uuid,
+                                          bytes(f"{self.motor_left_mode_tx}", encoding='utf-8'))
+        await self.client.write_gatt_char(self.motor_right_mode_tx_uuid,
+                                          bytes(f"{self.motor_right_mode_tx}", encoding='utf-8'))
 
     @staticmethod
     async def scan():
@@ -156,6 +202,14 @@ class BLEConnection:
         for i, device in enumerate(devices):
             print(f"{i} -> {device.name} -> {device.address}")
         return devices
+
+    async def startUpdateTrackingAndUltrasonic(self, rate=0.025):
+        while self.should_continue:
+            if self.is_connected:
+                await self.getTrackingAndUltrasonicData()
+                await asyncio.sleep(rate, self.loop)
+            else:
+                await asyncio.sleep(1, self.loop)
 
     async def startSendControl(self, rate=0.025):
         """
