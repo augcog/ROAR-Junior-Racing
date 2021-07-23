@@ -25,9 +25,12 @@ class BLEConnection:
                  acc_x_char_rx_uuid: str = "00000000-0000-0000-0000-000000000004",
                  acc_y_char_rx_uuid: str = "00000000-0000-0000-0000-000000000005",
                  acc_z_char_rx_uuid: str = "00000000-0000-0000-0000-000000000006",
-                 roll_char_rx_uuid: str = "00000000-0000-0000-0000-000000000007",
-                 pitch_char_rx_uuid: str = "00000000-0000-0000-0000-000000000008",
-                 yaw_char_rx_uuid: str = "00000000-0000-0000-0000-000000000009",
+                 gyro_x_char_rx_uuid: str = "00000000-0000-0000-0000-000000000007",
+                 gyro_y_char_rx_uuid: str = "00000000-0000-0000-0000-000000000008",
+                 gyro_z_char_rx_uuid: str = "00000000-0000-0000-0000-000000000009",
+                 mag_x_char_rx_uuid: str = "00000000-0000-0000-0000-000000000017",
+                 mag_y_char_rx_uuid: str = "00000000-0000-0000-0000-000000000018",
+                 mag_z_char_rx_uuid: str = "00000000-0000-0000-0000-000000000019",
                  motor_left_mode_tx_uuid: str = "00000000-0000-0000-0000-000000000010",
                  motor_right_mode_tx_uuid: str = "00000000-0000-0000-0000-000000000011",
                  motor_left_mode_rx_uuid: str = "00000000-0000-0000-0000-000000000012",
@@ -47,9 +50,12 @@ class BLEConnection:
         self.acc_x_char_rx_uuid = acc_x_char_rx_uuid
         self.acc_y_char_rx_uuid = acc_y_char_rx_uuid
         self.acc_z_char_rx_uuid = acc_z_char_rx_uuid
-        self.roll_char_rx_uuid = roll_char_rx_uuid
-        self.pitch_char_rx_uuid = pitch_char_rx_uuid
-        self.yaw_char_rx_uuid = yaw_char_rx_uuid
+        self.gyro_x_char_rx_uuid = gyro_x_char_rx_uuid
+        self.gyro_y_char_rx_uuid = gyro_y_char_rx_uuid
+        self.gyro_z_char_rx_uuid = gyro_z_char_rx_uuid
+        self.mag_x_char_rx_uuid = mag_x_char_rx_uuid
+        self.mag_y_char_rx_uuid = mag_y_char_rx_uuid
+        self.mag_z_char_rx_uuid = mag_z_char_rx_uuid
 
         self.motor_left_mode_tx_uuid = motor_left_mode_tx_uuid
         self.motor_right_mode_tx_uuid = motor_right_mode_tx_uuid
@@ -165,12 +171,16 @@ class BLEConnection:
                     await self.client.start_notify(self.motor_left_mode_rx_uuid, self.motor_left_mode_notify_callback)
                     await self.client.start_notify(self.motor_right_mode_rx_uuid, self.motor_right_mode_notify_callback)
 
-                    await self.client.start_notify(self.roll_char_rx_uuid, self.roll_notify_callback, )
-                    await self.client.start_notify(self.pitch_char_rx_uuid, self.pitch_notify_callback, )
-                    await self.client.start_notify(self.yaw_char_rx_uuid, self.yaw_notify_callback, )
+                    await self.client.start_notify(self.gyro_x_char_rx_uuid, self.roll_notify_callback, )
+                    await self.client.start_notify(self.gyro_y_char_rx_uuid, self.pitch_notify_callback, )
+                    await self.client.start_notify(self.gyro_z_char_rx_uuid, self.yaw_notify_callback, )
                     await self.client.start_notify(self.acc_x_char_rx_uuid, self.acc_x_notify_callback, )
                     await self.client.start_notify(self.acc_y_char_rx_uuid, self.acc_y_notify_callback, )
                     await self.client.start_notify(self.acc_z_char_rx_uuid, self.acc_z_notify_callback, )
+                    await self.client.start_notify(self.mag_x_char_rx_uuid, self.mag_x_notify_callback, )
+                    await self.client.start_notify(self.mag_y_char_rx_uuid, self.mag_y_notify_callback, )
+                    await self.client.start_notify(self.mag_z_char_rx_uuid, self.mag_z_notify_callback, )
+
                     await self.client.start_notify(self.left_line_tracking_rx_uuid, self.left_line_notify_callback, )
                     await self.client.start_notify(self.right_line_tracking_rx_uuid, self.right_line_notify_callback, )
                     await self.client.start_notify(self.ultrasonic_rx_uuid, self.ultrasonic_notify_callback, )
@@ -186,9 +196,12 @@ class BLEConnection:
                     await self.client.stop_notify(self.motor_right_rx_uuid)
                     await self.client.stop_notify(self.motor_left_mode_rx_uuid)
                     await self.client.stop_notify(self.motor_right_mode_rx_uuid)
-                    await self.client.stop_notify(self.roll_char_rx_uuid)
-                    await self.client.stop_notify(self.pitch_char_rx_uuid)
-                    await self.client.stop_notify(self.yaw_char_rx_uuid)
+                    await self.client.stop_notify(self.gyro_x_char_rx_uuid)
+                    await self.client.stop_notify(self.gyro_y_char_rx_uuid)
+                    await self.client.stop_notify(self.gyro_z_char_rx_uuid)
+                    await self.client.stop_notify(self.mag_x_char_rx_uuid)
+                    await self.client.stop_notify(self.mag_y_char_rx_uuid)
+                    await self.client.stop_notify(self.mag_z_char_rx_uuid)
                     await self.client.stop_notify(self.acc_x_char_rx_uuid)
                     await self.client.stop_notify(self.acc_y_char_rx_uuid)
                     await self.client.stop_notify(self.acc_z_char_rx_uuid)
@@ -221,13 +234,13 @@ class BLEConnection:
                                           bytes(f"{self.vehicle_state.motor_right_mode}", encoding='utf-8'))
 
     def roll_notify_callback(self, _, data):
-        [self.vehicle_state.roll] = struct.unpack('f', data)
+        [self.vehicle_state.gyroX] = struct.unpack('f', data)
 
     def pitch_notify_callback(self, _, data):
-        [self.vehicle_state.pitch] = struct.unpack('f', data)
+        [self.vehicle_state.gyroY] = struct.unpack('f', data)
 
     def yaw_notify_callback(self, _, data):
-        [self.vehicle_state.yaw] = struct.unpack('f', data)
+        [self.vehicle_state.gyroZ] = struct.unpack('f', data)
 
     def acc_x_notify_callback(self, _, data):
         [self.vehicle_state.aX] = struct.unpack('f', data)
@@ -237,6 +250,15 @@ class BLEConnection:
 
     def acc_z_notify_callback(self, _, data):
         [self.vehicle_state.aZ] = struct.unpack('f', data)
+
+    def mag_x_notify_callback(self, _, data):
+        [self.vehicle_state.magX] = struct.unpack('f', data)
+
+    def mag_y_notify_callback(self, _, data):
+        [self.vehicle_state.magY] = struct.unpack('f', data)
+
+    def mag_z_notify_callback(self, _, data):
+        [self.vehicle_state.magZ] = struct.unpack('f', data)
 
     def left_line_notify_callback(self, _, data):
         self.vehicle_state.is_left_tracking = bool(ord(data))

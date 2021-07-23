@@ -16,7 +16,6 @@
 
 #include <ArduinoBLE.h>
 #include <Arduino_LSM9DS1.h>
-#include "MadgwickAHRS.h"
 #include <stdlib.h>
 #include <Ultrasonic.h>
 
@@ -62,9 +61,12 @@ const char* motorRightModeCharTXUUID = "00000000-0000-0000-0000-000000000013";
 const char* accXcharTxUUID = "00000000-0000-0000-0000-000000000004";
 const char* accYcharTxUUID = "00000000-0000-0000-0000-000000000005";
 const char* accZcharTxUUID = "00000000-0000-0000-0000-000000000006";
-const char* rollcharTxUUID = "00000000-0000-0000-0000-000000000007";
-const char* pitchcharTxUUID = "00000000-0000-0000-0000-000000000008";
-const char* yawcharTxUUID = "00000000-0000-0000-0000-000000000009";
+const char* gyroXcharTxUUID = "00000000-0000-0000-0000-000000000007";
+const char* gyroYcharTxUUID = "00000000-0000-0000-0000-000000000008";
+const char* gyroZcharTxUUID = "00000000-0000-0000-0000-000000000009";
+const char* magXcharTxUUID = "00000000-0000-0000-0000-000000000017";
+const char* magYcharTxUUID = "00000000-0000-0000-0000-000000000018";
+const char* magZcharTxUUID = "00000000-0000-0000-0000-000000000019";
 
 const char* leftLineTrackingTxUUID = "00000000-0000-0000-0000-000000000014";
 const char* rightLineTrackingTxUUID = "00000000-0000-0000-0000-000000000015";
@@ -89,9 +91,12 @@ BLEBoolCharacteristic motorRightModeCharTX(motorRightModeCharTXUUID, BLERead | B
 BLEFloatCharacteristic accXcharTx(accXcharTxUUID, BLERead | BLENotify);
 BLEFloatCharacteristic accYcharTx(accYcharTxUUID, BLERead | BLENotify);
 BLEFloatCharacteristic accZcharTx(accZcharTxUUID, BLERead | BLENotify);
-BLEFloatCharacteristic rollcharTx(rollcharTxUUID, BLERead | BLENotify);
-BLEFloatCharacteristic pitchcharTx(pitchcharTxUUID, BLERead | BLENotify);
-BLEFloatCharacteristic yawcharTx(yawcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic gyroXcharTx(gyroXcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic gyroYcharTx(gyroYcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic gyroZcharTx(gyroZcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic magXcharTx(magXcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic magYcharTx(magYcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic magZcharTx(magZcharTxUUID, BLERead | BLENotify);
 
 BLEBoolCharacteristic leftLineTrackingTx(leftLineTrackingTxUUID, BLERead | BLENotify);
 BLEBoolCharacteristic rightLineTrackingTx(rightLineTrackingTxUUID, BLERead | BLENotify);
@@ -103,6 +108,9 @@ float acc_z = 0;
 float gyro_x = 0;
 float gyro_y = 0;
 float gyro_z = 0;
+float mag_x = 0;
+float mag_y = 0;
+float mag_z = 0;
 float roll = 0;
 float pitch = 0;
 float yaw = 0;
@@ -116,11 +124,6 @@ volatile int32_t motorLeftPWM = 0;
 volatile int32_t motorRightPWM = 0;
 volatile bool motorLeftMode = true; // true == forward, false == backward
 volatile bool motorRightMode = true;
-
-// initialize a Madgwick filter:
-Madgwick filter;
-// sensor's sample rate is fixed at 104 Hz:
-const float sensorRate = 104.00;
 
 const int ledPin = LED_BUILTIN;
 Ultrasonic ultrasonic(triggerPin, echoPin);
@@ -137,8 +140,6 @@ void setup() {
     while (1);
   }
 
-  filter.begin(sensorRate);
-
   startMotor();
   pinMode(leftTrackingSensorPin, INPUT);
   pinMode(rightTrackingSensorPin, INPUT);
@@ -149,10 +150,10 @@ void loop() {
   BLE.poll();
   updateSensors();
   writeToMotor();
+  printStatus();
 
   BLEDevice central = BLE.central();
   if (central) {
-    printStatus();
 
     motorLeftPWMCharTX.writeValue(motorLeftPWM);
     motorRightPWMCharTX.writeValue(motorRightPWM);
@@ -164,15 +165,19 @@ void loop() {
     accYcharTx.writeValue(acc_y);
     accZcharTx.writeValue(acc_z);
     
-    rollcharTx.writeValue(roll);
-    pitchcharTx.writeValue(pitch);
-    yawcharTx.writeValue(yaw);
+    gyroXcharTx.writeValue(gyro_x);
+    gyroYcharTx.writeValue(gyro_y);
+    gyroZcharTx.writeValue(gyro_z);
+
+    magXcharTx.writeValue(mag_x);
+    magYcharTx.writeValue(mag_y);
+    magZcharTx.writeValue(mag_z);
     
     leftLineTrackingTx.writeValue(isLeftTracking);
     rightLineTrackingTx.writeValue(isRightTracking);
     ultrasonicTx.writeValue(ultrasonicDistance);
   } else{
-    Serial.println("No device connected");
+//    Serial.println("No device connected");
   }
   
 }
@@ -238,23 +243,7 @@ void motorReverseMode() {
   rightMotorReverseMode();
 }
 
-void updateAcceleration(){
-  if (IMU.accelerationAvailable()) {
-    IMU.readAcceleration(acc_x, acc_y, acc_z);
-  }
-}
 
-void updateGyro() {
-    if (IMU.gyroscopeAvailable()) {
-        IMU.readGyroscope(gyro_x,gyro_y,gyro_z);
-  }
-}
-void updateOrientation() {
-  filter.updateIMU(gyro_x,gyro_y,gyro_z, acc_x, acc_y, acc_z);
-  roll = filter.getRoll();
-  pitch = filter.getPitch();
-  yaw = filter.getYaw();
-}
 void updateUltrasonic() {
   ultrasonicDistance = ultrasonic.read();
 }
@@ -264,9 +253,13 @@ void updateLineTracking() {
 }
 
 void updateSensors(){
-  updateAcceleration();
-  updateGyro();
-  updateOrientation();
+
+    if (IMU.accelerationAvailable() && IMU.gyroscopeAvailable() && IMU.magneticFieldAvailable()) {
+      IMU.readAcceleration(acc_x, acc_y, acc_z);
+      IMU.readGyroscope(gyro_x,gyro_y,gyro_z);
+      IMU.readMagneticField(mag_x, mag_y, mag_z);
+    }
+  
 
   updateUltrasonic();
   updateLineTracking();
@@ -296,9 +289,14 @@ void startBLE() {
   sensorsService.addCharacteristic(accXcharTx);
   sensorsService.addCharacteristic(accYcharTx);
   sensorsService.addCharacteristic(accZcharTx);
-  sensorsService.addCharacteristic(rollcharTx);
-  sensorsService.addCharacteristic(pitchcharTx);
-  sensorsService.addCharacteristic(yawcharTx);
+  sensorsService.addCharacteristic(gyroXcharTx);
+  sensorsService.addCharacteristic(gyroYcharTx);
+  sensorsService.addCharacteristic(gyroZcharTx);
+  sensorsService.addCharacteristic(magXcharTx);
+  sensorsService.addCharacteristic(magYcharTx);
+  sensorsService.addCharacteristic(magZcharTx);
+  
+  
 
   lineTrackingAndUltrasonicService.addCharacteristic(leftLineTrackingTx);
   lineTrackingAndUltrasonicService.addCharacteristic(rightLineTrackingTx);
