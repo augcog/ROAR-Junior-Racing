@@ -12,36 +12,6 @@ try:
 except:
     from ROAR_Junior.game.game import Game
 
-
-async def main(tasks):
-    await asyncio.wait(tasks)
-
-
-def createBLETasks(ble_connection: BLEConnection) -> List:
-    """
-    Create Bluetooth related tasks
-    :param ble_connection: Bluetooth connection object
-    :return:
-        List of task that asyncio can start
-    """
-    return [loop.create_task(ble_connection.connectHelper()),
-            loop.create_task(ble_connection.startSendControl()),
-            # loop.create_task(ble_connection.startUpdateAcc()),
-            # loop.create_task(ble_connection.startupdateOrientation()),
-            # loop.create_task(ble_connection.startUpdateTrackingAndUltrasonic())
-            ]
-
-
-def createGameTask(game: Game) -> List:
-    """
-    Create game related Tasks
-    :param game: game object
-    :return:
-        List of task related to game
-    """
-    return [loop.create_task(game.run())]
-
-
 if __name__ == '__main__':
 
     # define logging format
@@ -58,16 +28,10 @@ if __name__ == '__main__':
         loop=loop,
         device_addr=deviceUUID,
         debug=logging.DEBUG)
-    game = Game(ble_connection=connection, loop=loop, rate=0.1, debug_level=logging.DEBUG)
-    tasks = []
-    tasks.extend(createBLETasks(ble_connection=connection))
-    tasks.extend(createGameTask(game=game))
 
-    # start all tasks
     try:
-        loop.run_until_complete(main(tasks))
-        loop.close()
+        loop.run_until_complete(connection.connect_to_device())
     except KeyboardInterrupt:
         print("User Stopped Program")
-    finally:
-        connection.on_disconnect()
+
+

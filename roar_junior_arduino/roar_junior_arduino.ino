@@ -51,8 +51,9 @@ const char* lineTrackingAndUltrasonicServiceUUID = "00001103-0000-1000-8000-0080
 
 const char* motorLeftPWMCharRXUUID = "00000000-0000-0000-0000-000000000000";
 const char* motorRightPWMCharRXUUID = "00000000-0000-0000-0000-000000000001";
-const char* throttlePWMCharTXUUID = "00000000-0000-0000-0000-000000000002";
+const char* motorLeftPWMCharTXUUID = "00000000-0000-0000-0000-000000000002";
 const char* motorRightPWMCharTXUUID = "00000000-0000-0000-0000-000000000003";
+
 const char* motorLeftModeCharRXUUID = "00000000-0000-0000-0000-000000000010";
 const char* motorRightModeCharRXUUID = "00000000-0000-0000-0000-000000000011";
 const char* motorLeftModeCharTXUUID = "00000000-0000-0000-0000-000000000012";
@@ -77,7 +78,7 @@ BLEService lineTrackingAndUltrasonicService(lineTrackingAndUltrasonicServiceUUID
 
 BLECharacteristic motorLeftPWMCharRX(motorLeftPWMCharRXUUID, BLEWrite | BLEWriteWithoutResponse, 4, true);
 BLECharacteristic motorRightPWMCharRX(motorRightPWMCharRXUUID, BLEWrite | BLEWriteWithoutResponse, 4, true);                                    
-BLEIntCharacteristic motorLeftPWMCharTX(throttlePWMCharTXUUID, BLERead | BLENotify);     
+BLEIntCharacteristic motorLeftPWMCharTX(motorLeftPWMCharTXUUID, BLERead | BLENotify);     
 BLEIntCharacteristic motorRightPWMCharTX(motorRightPWMCharTXUUID, BLERead | BLENotify); 
 
 BLECharacteristic motorLeftModeCharRX(motorLeftModeCharRXUUID, BLEWrite | BLEWriteWithoutResponse, 4, true);
@@ -85,12 +86,12 @@ BLECharacteristic motorRightModeCharRX(motorRightModeCharRXUUID, BLEWrite | BLEW
 BLEBoolCharacteristic motorLeftModeCharTX(motorLeftModeCharTXUUID, BLERead | BLENotify);     
 BLEBoolCharacteristic motorRightModeCharTX(motorRightModeCharTXUUID, BLERead | BLENotify); 
 
-BLEFloatCharacteristic accXcharTx(accXcharTxUUID, BLERead);
-BLEFloatCharacteristic accYcharTx(accYcharTxUUID, BLERead);
-BLEFloatCharacteristic accZcharTx(accZcharTxUUID, BLERead);
-BLEFloatCharacteristic rollcharTx(rollcharTxUUID, BLERead);
-BLEFloatCharacteristic pitchcharTx(pitchcharTxUUID, BLERead);
-BLEFloatCharacteristic yawcharTx(yawcharTxUUID, BLERead);
+BLEFloatCharacteristic accXcharTx(accXcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic accYcharTx(accYcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic accZcharTx(accZcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic rollcharTx(rollcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic pitchcharTx(pitchcharTxUUID, BLERead | BLENotify);
+BLEFloatCharacteristic yawcharTx(yawcharTxUUID, BLERead | BLENotify);
 
 BLEBoolCharacteristic leftLineTrackingTx(leftLineTrackingTxUUID, BLERead | BLENotify);
 BLEBoolCharacteristic rightLineTrackingTx(rightLineTrackingTxUUID, BLERead | BLENotify);
@@ -143,17 +144,47 @@ void setup() {
   pinMode(rightTrackingSensorPin, INPUT);
 }
 
+
 void loop() {
   BLE.poll();
   updateSensors();
   writeToMotor();
+
+  BLEDevice central = BLE.central();
+  if (central) {
+    printStatus();
+
+    motorLeftPWMCharTX.writeValue(motorLeftPWM);
+    motorRightPWMCharTX.writeValue(motorRightPWM);
+    motorLeftModeCharTX.writeValue(motorLeftMode);
+    motorRightModeCharTX.writeValue(motorRightMode);
+
+    
+    accXcharTx.writeValue(acc_x);
+    accYcharTx.writeValue(acc_y);
+    accZcharTx.writeValue(acc_z);
+    
+    rollcharTx.writeValue(roll);
+    pitchcharTx.writeValue(pitch);
+    yawcharTx.writeValue(yaw);
+    
+    leftLineTrackingTx.writeValue(isLeftTracking);
+    rightLineTrackingTx.writeValue(isRightTracking);
+    ultrasonicTx.writeValue(ultrasonicDistance);
+  } else{
+    Serial.println("No device connected");
+  }
   
-//  String data = String(String("(") + String(acc_x,3) + "," + String(acc_y,3) + "," + String(acc_z,3) + "," 
-//                       + String(roll,3) + "," + String(pitch,3) + "," + String(yaw,3) + "," 
-//                       + String(motorLeftPWM) + "," + String(motorRightPWM) + ","
-//                       + String(isLeftTracking) + "," + String(isRightTracking) + "," + String(ultrasonicDistance) +
-//                       String(")"));
-//  Serial.println(data);
+}
+
+void printStatus() {
+    String data = String(String("(") + String(acc_x,3) + "," + String(acc_y,3) + "," + String(acc_z,3) + "," 
+                       + String(roll,3) + "," + String(pitch,3) + "," + String(yaw,3) + "," 
+                       + String(motorLeftPWM) + "," + String(motorRightPWM) + ","
+                       + String(motorLeftMode) + "," + String(motorRightMode) + "," 
+                       + String(isLeftTracking) + "," + String(isRightTracking) + "," + String(ultrasonicDistance) +
+                       String(")"));
+    Serial.println(data);
 }
 
 void startMotor() {
@@ -280,29 +311,13 @@ void startBLE() {
   BLE.setEventHandler(BLEConnected, onBLEConnected);
   BLE.setEventHandler(BLEDisconnected, onBLEDisconnected);
 
-  motorRightPWMCharRX.setEventHandler(BLEWritten, motorRightPWMCharRXWritten);
   motorLeftPWMCharRX.setEventHandler(BLEWritten, motorLeftPWMCharRXWritten);
-  motorLeftPWMCharTX.setEventHandler(BLERead, motorLeftPWMCharTXRead);
-  motorRightPWMCharTX.setEventHandler(BLERead, motorRightPWMCharTXRead);
+  motorRightPWMCharRX.setEventHandler(BLEWritten, motorRightPWMCharRXWritten);
+
 
   motorLeftModeCharRX.setEventHandler(BLEWritten, motorLeftModeCharRXWritten);
   motorRightModeCharRX.setEventHandler(BLEWritten, motorRightModeCharRXWritten);
-  motorLeftModeCharTX.setEventHandler(BLERead, motorLeftModeCharTXRead);
-  motorRightModeCharTX.setEventHandler(BLERead, motorRightModeCharTXRead);
 
-  accXcharTx.setEventHandler(BLERead, accXcharTxRead);
-  accYcharTx.setEventHandler(BLERead, accYcharTxRead);
-  accZcharTx.setEventHandler(BLERead, accZcharTxRead);
-  rollcharTx.setEventHandler(BLERead, rollcharTxRead);
-  pitchcharTx.setEventHandler(BLERead, pitchcharTxRead);
-  yawcharTx.setEventHandler(BLERead, yawcharTxRead);
-
-
-  leftLineTrackingTx.setEventHandler(BLERead, leftLineTrackingTxRead);
-  rightLineTrackingTx.setEventHandler(BLERead, rightLineTrackingTxRead);
-  ultrasonicTx.setEventHandler(BLERead, ultrasonicTxRead);
-  
-  
   BLE.advertise();
   disconnectedLight();
   Serial.println("Bluetooth device active, waiting for connections...");
@@ -325,42 +340,12 @@ void onBLEDisconnected(BLEDevice central) {
   motorRightPWM = 0;
 }
 
-void accXcharTxRead(BLEDevice central, BLECharacteristic characteristic) {
-  char buf[5];
-  String(acc_x).toCharArray(buf, 5);
-  characteristic.writeValue(buf);
-}
-void accYcharTxRead(BLEDevice central, BLECharacteristic characteristic) {
-  char buf[32];
-  String(acc_y).toCharArray(buf, 32);
-  characteristic.writeValue(buf);
-}
-void accZcharTxRead(BLEDevice central, BLECharacteristic characteristic) {
-  char buf[32];
-  String(acc_z).toCharArray(buf, 32);
-  characteristic.writeValue(buf);
-}
-void rollcharTxRead(BLEDevice central, BLECharacteristic characteristic) {
-  char buf[32];
-  String(roll).toCharArray(buf, 32);
-  characteristic.writeValue(buf);
-}
-void pitchcharTxRead(BLEDevice central, BLECharacteristic characteristic) {
-  char buf[32];
-  String(pitch).toCharArray(buf, 32);
-  characteristic.writeValue(buf);
-}
-void yawcharTxRead(BLEDevice central, BLECharacteristic characteristic) {
-  char buf[32];
-  String(yaw).toCharArray(buf, 32);
-  characteristic.writeValue(buf);
-}
-
 
 void motorRightPWMCharRXWritten(BLEDevice central, BLECharacteristic characteristic) {
   char buf[5];
   characteristic.readValue(buf, 5);
   motorRightPWM = atoi(buf);
+  
 }
 
 void motorLeftPWMCharRXWritten(BLEDevice central, BLECharacteristic characteristic) {
@@ -368,16 +353,6 @@ void motorLeftPWMCharRXWritten(BLEDevice central, BLECharacteristic characterist
   characteristic.readValue(buf, 5);
   motorLeftPWM = atoi(buf);  
 }
-
-void motorLeftPWMCharTXRead(BLEDevice central, BLECharacteristic characteristic) {
-  motorLeftPWMCharTX.writeValue(motorLeftPWM);
-}
-
-void motorRightPWMCharTXRead(BLEDevice central, BLECharacteristic characteristic) {
-  motorRightPWMCharTX.writeValue(motorRightPWM);
-}
-
-
 void motorRightModeCharRXWritten(BLEDevice central, BLECharacteristic characteristic) {
   byte state;
   characteristic.readValue(state);
@@ -397,26 +372,6 @@ void motorLeftModeCharRXWritten(BLEDevice central, BLECharacteristic characteris
       motorLeftMode = false;
   }  
 }
-
-void motorLeftModeCharTXRead(BLEDevice central, BLECharacteristic characteristic) {
-  motorLeftModeCharTX.writeValue(motorLeftMode);
-}
-
-void motorRightModeCharTXRead(BLEDevice central, BLECharacteristic characteristic) {
-  motorRightModeCharTX.writeValue(motorRightMode);
-}
-
-void leftLineTrackingTxRead(BLEDevice central, BLECharacteristic characteristic) {
-  characteristic.writeValue((byte)isLeftTracking);
-}
-void rightLineTrackingTxRead(BLEDevice central, BLECharacteristic characteristic) {
-  characteristic.writeValue((byte)isRightTracking);
-}
-void ultrasonicTxRead(BLEDevice central, BLECharacteristic characteristic) {
-  ultrasonicTx.writeValue(ultrasonicDistance);
-  Serial.println(ultrasonicDistance);
-}
-
 
 
 /*

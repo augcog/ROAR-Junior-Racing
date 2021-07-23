@@ -5,11 +5,19 @@ from typing import List, Optional, Union
 import logging
 from utilities import VehicleState
 import time
+import struct
+from game.game import Game
+
+
+def on_roll_char_rx_callback(sender: int, data: bytes):
+    print(f"{sender}: {data}")
+
 
 class BLEConnection:
     def __init__(self,
                  loop: asyncio.AbstractEventLoop,
                  device_addr: str,
+                 game_rate: float = 0.01,
                  motor_left_tx_uuid: str = "00000000-0000-0000-0000-000000000000",
                  motor_right_tx_uuid: str = "00000000-0000-0000-0000-000000000001",
                  motor_left_rx_uuid: str = "00000000-0000-0000-0000-000000000002",
@@ -52,35 +60,20 @@ class BLEConnection:
         self.right_line_tracking_rx_uuid = right_line_tracking_rx_uuid
         self.ultrasonic_rx_uuid = ultrasonic_rx_uuid
 
-        self.client = BleakClient(self.device_addr, loop=self.loop)
+        self.client = BleakClient(self.device_addr,
+                                  loop=self.loop,
+                                  timeout=5)
 
         # state variables
         self.should_continue = True
 
         self.is_connected = False
         self.device: Optional[BLEDevice] = None
+        self.vehicle_state = VehicleState()
+        self.game = Game(vehicle_state=self.vehicle_state, debug_level=debug)
+        self.game_rate = game_rate
 
-        self.motor_left_tx_data: int = 0
-        self.motor_right_tx_data: int = 0
-        self.motor_left_rx_data: int = 0
-        self.motor_right_rx_data: int = 0
-        self.motor_left_mode_rx: bool = True
-        self.motor_right_mode_rx: bool = True
-        self.motor_left_mode_tx: bool = True
-        self.motor_right_mode_tx: bool = True
-
-        self.acc_x: float = 0
-        self.acc_y: float = 0
-        self.acc_z: float = 0
-        self.roll: float = 0
-        self.pitch: float = 0
-        self.yaw: float = 0
-
-        self.is_left_tracking: bool = False
-        self.is_right_tracking: bool = False
-        self.ultrasonic_distance: int = 300
-
-    def on_disconnect(self):
+    def on_disconnect(self, any):
         """
         Call back handler for Bleak.BLEClient.set_disconnected_callback
         :return:
@@ -89,107 +82,32 @@ class BLEConnection:
         self.is_connected = False
         self.logger.debug("Disconnected")
 
-    async def connectHelper(self):
-        """
-        Attempt to connect to the device with the address provided.
-        Set the disconnection call back on connection successfully established
-
-        :return:
-            None
-        """
-        if self.is_connected is False:
-            self.logger.debug(f"Scanning for device with UUID [{self.device_addr}]")
-            # scan
-            devices: List[BLEDevice] = await discover()
-            # get device name
-            for device in devices:
-                if device.address == self.device_addr:
-                    self.device = device
-                    break
-            if self.device is None:
-                raise BleakError(f"No Device with Address found {self.device_addr}. "
-                                 f"Please use `scan` to find your device address first")
-        try:
-            self.logger.info(f"Attempting to connect to {self.device.name}")
-            await self.client.connect()
-
-            self.is_connected = self.client.is_connected
-            if self.is_connected:
-                self.logger.info(f"Connected to {self.device.name}")
-                self.client.set_disconnected_callback(self.on_disconnect)
-        except Exception as e:
-            self.logger.error(e)
-
-    def get_state(self) -> str:
-        """
-        Get a String representation of the current State
-        :return:
-            comma delimited string of states.
-        """
-        return f"{self.acc_x}, {self.acc_y}, {self.acc_z} | {self.roll}, {self.pitch}, {self.yaw} | {self.motor_left_rx_data}, {self.motor_right_rx_data}"
-
-    async def getTrackingAndUltrasonicData(self):
-        """
-        Send BLE call for getting left and right line tracking sensor data
-        NOTE: will overwrite original data
-        :return:
-            None
-        """
-        # print("Getting Tracking Data")
-        self.is_left_tracking = bool(ord(await self.client.read_gatt_char(self.left_line_tracking_rx_uuid)))
-        self.is_right_tracking = bool(ord(await self.client.read_gatt_char(self.right_line_tracking_rx_uuid)))
-        self.ultrasonic_distance = int.from_bytes(await self.client.read_gatt_char(self.ultrasonic_rx_uuid), "little", signed=True)
-
-    async def get_motor_data(self):
-        """
-        Send BLE call for getting motor data
-        Note: Will overwrite original data
-        :return:
-            None
-        """
-        self.motor_left_rx_data = int.from_bytes(await self.client.read_gatt_char(self.motor_left_rx_uuid),
-                                                 "little", signed=True)
-        self.motor_right_rx_data = int.from_bytes(await self.client.read_gatt_char(self.motor_right_rx_uuid),
-                                                  "little", signed=True)
-        self.motor_left_mode_rx = bool(await self.client.read_gatt_char(self.motor_left_mode_rx_uuid))
-        self.motor_right_mode_rx = bool(await self.client.read_gatt_char(self.motor_right_mode_rx_uuid))
-
-    async def get_acc(self):
-        """
-        Send BLE call for getting accelerometer data
-        Note:
-        :return:
-            None
-        """
-        self.acc_x = float(await self.client.read_gatt_char(self.acc_x_char_rx_uuid))
-        self.acc_y = float(await self.client.read_gatt_char(self.acc_y_char_rx_uuid))
-        self.acc_z = float(await self.client.read_gatt_char(self.acc_z_char_rx_uuid))
-
-    async def get_orientation(self):
-        """
-        Send BLE call to get the Orientation data
-        Note: Will overwrite original data
-
-        :return:
-            None
-        """
-        self.roll = float(await self.client.read_gatt_char(self.roll_char_rx_uuid))
-        self.pitch = float(await self.client.read_gatt_char(self.pitch_char_rx_uuid))
-        self.yaw = float(await self.client.read_gatt_char(self.yaw_char_rx_uuid))
-
     async def send_motor_data(self):
         """
         send latest motor data
         :return:
         """
+
         await self.client.write_gatt_char(self.motor_left_tx_uuid,
-                                          bytes(f"{self.motor_left_tx_data}", encoding='utf-8'))
+                                          bytes(self.ensure_three_digit_str(self.vehicle_state.motor_left),
+                                                encoding='utf-8'))
         await self.client.write_gatt_char(self.motor_right_tx_uuid,
-                                          bytes(f"{self.motor_right_tx_data}", encoding='utf-8'))
+                                          bytes(self.ensure_three_digit_str(self.vehicle_state.motor_right),
+                                                encoding='utf-8'))
         await self.client.write_gatt_char(self.motor_left_mode_tx_uuid,
-                                          bytes(f"{self.motor_left_mode_tx}", encoding='utf-8'))
+                                          bytes(f"{self.vehicle_state.motor_left_mode}", encoding='utf-8'))
         await self.client.write_gatt_char(self.motor_right_mode_tx_uuid,
-                                          bytes(f"{self.motor_right_mode_tx}", encoding='utf-8'))
+                                          bytes(f"{self.vehicle_state.motor_right_mode}", encoding='utf-8'))
+
+    @staticmethod
+    def ensure_three_digit_str(info: int) -> str:
+        if info < 10:
+            data = f"00{info}"
+        elif info < 100:
+            data = f"0{info}"
+        else:
+            data = str(info)
+        return data
 
     @staticmethod
     async def scan():
@@ -202,14 +120,6 @@ class BLEConnection:
         for i, device in enumerate(devices):
             print(f"{i} -> {device.name} -> {device.address}")
         return devices
-
-    async def startUpdateTrackingAndUltrasonic(self, rate=0.025):
-        while self.should_continue:
-            if self.is_connected:
-                await self.getTrackingAndUltrasonicData()
-                await asyncio.sleep(rate, self.loop)
-            else:
-                await asyncio.sleep(1, self.loop)
 
     async def startSendControl(self, rate=0.025):
         """
@@ -226,63 +136,113 @@ class BLEConnection:
             else:
                 await asyncio.sleep(1, self.loop)
 
-    async def startUpdateAcc(self, rate=0.025):
-        """
-        Used in Asyncio to create a loop for getting accelerometer data
+    async def connect_to_device(self):
 
-        :param rate: rate to send it at. 1 / rate = FPS
-        :return:
-            None
-        """
         while self.should_continue:
-            if self.is_connected:
-                await self.get_acc()
-                await asyncio.sleep(rate, self.loop)
-            else:
-                await asyncio.sleep(1, self.loop)
+            try:
+                if self.is_connected is False:
+                    self.logger.debug(f"Scanning for device with UUID [{self.device_addr}]")
+                    # scan
+                    devices: List[BLEDevice] = await discover()
+                    # get device name
+                    for device in devices:
+                        if device.address == self.device_addr:
+                            self.device = device
+                            break
+                    if self.device is None:
+                        raise BleakError(f"No Device with Address found {self.device_addr}. "
+                                         f"Please use `scan` to find your device address first")
 
-    async def startupdateOrientation(self, rate=0.025):
-        """
-        Used in Asyncio to create a loop for getting Gyro data, converted to orientation
+                self.logger.info(f"Connecting to {self.device.name}: {self.device_addr}")
+                await self.client.connect()
+                self.is_connected = self.client.is_connected
+                self.client.set_disconnected_callback(self.on_disconnect)
+                if self.is_connected:
+                    self.logger.info(f"Connected to {self.device.name}")
 
-        :param rate: rate to send it at. 1 / rate = FPS
-        :return:
-            None
-        """
-        while self.should_continue:
-            if self.is_connected:
-                await self.get_orientation()
-                await asyncio.sleep(rate, self.loop)
-            else:
-                await asyncio.sleep(1, self.loop)
+                    await self.client.start_notify(self.motor_left_rx_uuid, self.motor_left_notify_callback)
+                    await self.client.start_notify(self.motor_right_rx_uuid, self.motor_right_notify_callback)
+                    await self.client.start_notify(self.motor_left_mode_rx_uuid, self.motor_left_mode_notify_callback)
+                    await self.client.start_notify(self.motor_right_mode_rx_uuid, self.motor_right_mode_notify_callback)
 
-    async def connect(self):
-        await self.connectHelper()
+                    await self.client.start_notify(self.roll_char_rx_uuid, self.roll_notify_callback, )
+                    await self.client.start_notify(self.pitch_char_rx_uuid, self.pitch_notify_callback, )
+                    await self.client.start_notify(self.yaw_char_rx_uuid, self.yaw_notify_callback, )
+                    await self.client.start_notify(self.acc_x_char_rx_uuid, self.acc_x_notify_callback, )
+                    await self.client.start_notify(self.acc_y_char_rx_uuid, self.acc_y_notify_callback, )
+                    await self.client.start_notify(self.acc_z_char_rx_uuid, self.acc_z_notify_callback, )
+                    await self.client.start_notify(self.left_line_tracking_rx_uuid, self.left_line_notify_callback, )
+                    await self.client.start_notify(self.right_line_tracking_rx_uuid, self.right_line_notify_callback, )
+                    await self.client.start_notify(self.ultrasonic_rx_uuid, self.ultrasonic_notify_callback, )
 
+                    while self.should_continue:
+                        self.should_continue = self.game.run_step()
+                        if not self.is_connected:
+                            break
+                        await asyncio.sleep(self.game_rate)
 
-async def main(loop, connection):
-    # f1 = loop.create_task(connect(connection=connection))
-    f1 = loop.create_task(connection.connectHelper())
-    f2 = loop.create_task(connection.startUpdateAcc())
-    f3 = loop.create_task(connection.startupdateOrientation())
-    await asyncio.wait([f1, f2, f3])
+                    self.logger.debug("Stop Notifying")
+                    await self.client.stop_notify(self.motor_left_rx_uuid)
+                    await self.client.stop_notify(self.motor_right_rx_uuid)
+                    await self.client.stop_notify(self.motor_left_mode_rx_uuid)
+                    await self.client.stop_notify(self.motor_right_mode_rx_uuid)
+                    await self.client.stop_notify(self.roll_char_rx_uuid)
+                    await self.client.stop_notify(self.pitch_char_rx_uuid)
+                    await self.client.stop_notify(self.yaw_char_rx_uuid)
+                    await self.client.stop_notify(self.acc_x_char_rx_uuid)
+                    await self.client.stop_notify(self.acc_y_char_rx_uuid)
+                    await self.client.stop_notify(self.acc_z_char_rx_uuid)
+                    await self.client.stop_notify(self.left_line_tracking_rx_uuid)
+                    await self.client.stop_notify(self.right_line_tracking_rx_uuid)
+                    await self.client.stop_notify(self.ultrasonic_rx_uuid)
 
+                    self.should_continue = False
+                else:
+                    print(f"Failed to connect to Device")
+            except Exception as e:
+                print(e)
 
-if __name__ == '__main__':
-    logging.basicConfig(format='%(levelname)s - %(asctime)s - %(name)s '
-                               '- %(message)s',
-                        datefmt="%H:%M:%S")
-    loop = asyncio.get_event_loop()
-    deviceUUID = "095D2164-4A57-47B0-8857-BDA8537BBFA1"
-    connection: BLEConnection = BLEConnection(
-        loop=loop,
-        device_addr=deviceUUID,
-        debug=logging.DEBUG
-    )
-    try:
-        loop.run_until_complete(main(loop, connection))
-        loop.close()
-    except KeyboardInterrupt:
-        print("User Stopped Program")
-    finally:
-        connection.on_disconnect()
+    async def motor_left_notify_callback(self, _, __):
+        await self.client.write_gatt_char(self.motor_left_tx_uuid,
+                                          bytes(self.ensure_three_digit_str(self.vehicle_state.motor_left),
+                                                encoding='utf-8'))
+
+    async def motor_right_notify_callback(self, _, __):
+        await self.client.write_gatt_char(self.motor_right_tx_uuid,
+                                          bytes(self.ensure_three_digit_str(self.vehicle_state.motor_right),
+                                                encoding='utf-8'))
+
+    async def motor_left_mode_notify_callback(self, _, __):
+        await self.client.write_gatt_char(self.motor_left_mode_tx_uuid,
+                                          bytes(f"{self.vehicle_state.motor_left_mode}", encoding='utf-8'))
+
+    async def motor_right_mode_notify_callback(self, _, __):
+        await self.client.write_gatt_char(self.motor_right_mode_tx_uuid,
+                                          bytes(f"{self.vehicle_state.motor_right_mode}", encoding='utf-8'))
+
+    def roll_notify_callback(self, _, data):
+        [self.vehicle_state.roll] = struct.unpack('f', data)
+
+    def pitch_notify_callback(self, _, data):
+        [self.vehicle_state.pitch] = struct.unpack('f', data)
+
+    def yaw_notify_callback(self, _, data):
+        [self.vehicle_state.yaw] = struct.unpack('f', data)
+
+    def acc_x_notify_callback(self, _, data):
+        [self.vehicle_state.aX] = struct.unpack('f', data)
+
+    def acc_y_notify_callback(self, _, data):
+        [self.vehicle_state.aY] = struct.unpack('f', data)
+
+    def acc_z_notify_callback(self, _, data):
+        [self.vehicle_state.aZ] = struct.unpack('f', data)
+
+    def left_line_notify_callback(self, _, data):
+        self.vehicle_state.is_left_tracking = bool(ord(data))
+
+    def right_line_notify_callback(self, _, data):
+        self.vehicle_state.is_right_tracking = bool(ord(data))
+
+    def ultrasonic_notify_callback(self, _, data):
+        self.vehicle_state.ultra_dist = int.from_bytes(data, "little", signed=True)

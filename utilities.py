@@ -13,6 +13,6 @@ class VehicleState(BaseModel):
     motor_left_mode: bool = Field(True, description="True is Forward")
     motor_right_mode: bool = Field(True, description="True is Forward")
 
-    is_left_tracing: bool = Field(True)
+    is_left_tracking: bool = Field(True)
     is_right_tracking: bool = Field(True)
     ultra_dist: int = Field(300)
