@@ -1,4 +1,15 @@
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, validator
+import enum
+
+
+class LeftModeEnum(enum.Enum):
+    forward = True
+    backward = False
+
+
+class RightModeEnum(enum.Enum):
+    forward = True
+    backward = False
 
 
 class VehicleState(BaseModel):

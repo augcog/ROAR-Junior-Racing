@@ -5,9 +5,10 @@ import logging
 import asyncio
 
 try:
-    from ROAR_Junior.keyboard_control import JuniorKeyboardControl
+    from ROAR_Junior.keyboard_control import JuniorManualControl
 except:
-    from keyboard_control import JuniorKeyboardControl
+    from keyboard_control import JuniorManualControl
+
 
 from utilities import VehicleState
 
@@ -18,7 +19,7 @@ class Game:
         self.logger.setLevel(level=debug_level)
         self.vehicle_state = vehicle_state
         self.display: Optional[pygame.display] = None
-        self.controller = JuniorKeyboardControl(
+        self.controller = JuniorManualControl(
             log_level=logging.INFO
         )
         self.clock: Optional[pygame.time.Clock] = None
@@ -44,12 +45,13 @@ class Game:
         :return:
             None
         """
-
+        self.clock.tick(40)
         self.should_continue, new_kb_control = self.update_pygame()
         self.vehicle_state.motor_left, self.vehicle_state.motor_right, self.vehicle_state.motor_left_mode, \
         self.vehicle_state.motor_right_mode = new_kb_control
-        self.execute_user_action()
+        # self.execute_user_action()
         self.debug_state()
+        # print(self.vehicle_state.motor_left, self.vehicle_state.motor_right)
         return self.should_continue
 
     def debug_state(self):

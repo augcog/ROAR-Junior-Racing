@@ -20,9 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e7e59de-18ee-4bc3-bb3f-db0234b5c47e" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/joy_stick_controller.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bluetooth/ble.py" beforeDir="false" afterPath="$PROJECT_DIR$/bluetooth/ble.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/roar_junior_arduino.ino" beforeDir="false" afterPath="$PROJECT_DIR$/roar_junior_arduino/roar_junior_arduino.ino" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/game/game.py" beforeDir="false" afterPath="$PROJECT_DIR$/game/game.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/keyboard_control.py" beforeDir="false" afterPath="$PROJECT_DIR$/keyboard_control.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/utilities.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -69,7 +70,9 @@
       <workItem from="1626843390875" duration="851000" />
       <workItem from="1626890100935" duration="14139000" />
       <workItem from="1626992334062" duration="24763000" />
-      <workItem from="1627027046630" duration="3086000" />
+      <workItem from="1627027046630" duration="4326000" />
+      <workItem from="1627063361263" duration="93000" />
+      <workItem from="1627147076136" duration="6057000" />
     </task>
     <servers />
   </component>
