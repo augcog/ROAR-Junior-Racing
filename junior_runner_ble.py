@@ -1,16 +1,8 @@
 import logging
 from typing import List
 import asyncio
+from bluetooth.ble import BLEConnection
 
-try:
-    from bluetooth.ble import BLEConnection
-except:
-    from ROAR_Junior.bluetooth.ble import BLEConnection
-
-try:
-    from game.game import Game
-except:
-    from ROAR_Junior.game.game import Game
 
 if __name__ == '__main__':
 
@@ -22,11 +14,12 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
     # you may get this by doing BLEConnection.scan() and copy the ID of the device you want to connect to.
     deviceUUID = "095D2164-4A57-47B0-8857-BDA8537BBFA1"
-
+    cam_ip_addr = "10.0.0.23"
     # prelude: Initialize Game and BLE connection
     connection: BLEConnection = BLEConnection(
         loop=loop,
         device_addr=deviceUUID,
+        cam_ip_addr=cam_ip_addr,
         debug=logging.DEBUG)
 
     try:

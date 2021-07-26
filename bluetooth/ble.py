@@ -17,6 +17,7 @@ class BLEConnection:
     def __init__(self,
                  loop: asyncio.AbstractEventLoop,
                  device_addr: str,
+                 cam_ip_addr: Optional[str] = None,
                  game_rate: float = 0.01,
                  motor_left_tx_uuid: str = "00000000-0000-0000-0000-000000000000",
                  motor_right_tx_uuid: str = "00000000-0000-0000-0000-000000000001",
@@ -76,7 +77,7 @@ class BLEConnection:
         self.is_connected = False
         self.device: Optional[BLEDevice] = None
         self.vehicle_state = VehicleState()
-        self.game = Game(vehicle_state=self.vehicle_state, debug_level=debug)
+        self.game = Game(vehicle_state=self.vehicle_state, cam_ip_addr=cam_ip_addr, debug_level=debug)
         self.game_rate = game_rate
 
     def on_disconnect(self, any):
