@@ -3,7 +3,6 @@ from typing import List
 import asyncio
 from bluetooth.ble import BLEConnection
 
-
 if __name__ == '__main__':
 
     # define logging format
@@ -13,8 +12,8 @@ if __name__ == '__main__':
 
     loop = asyncio.get_event_loop()
     # you may get this by doing BLEConnection.scan() and copy the ID of the device you want to connect to.
-    deviceUUID = "095D2164-4A57-47B0-8857-BDA8537BBFA1"
-    cam_ip_addr = "10.0.0.23"
+    deviceUUID = "2F47C88C-746E-45D9-8811-49D7E651C63E"
+    cam_ip_addr = "10.0.0.26"
     # prelude: Initialize Game and BLE connection
     connection: BLEConnection = BLEConnection(
         loop=loop,
@@ -26,5 +25,3 @@ if __name__ == '__main__':
         loop.run_until_complete(connection.connect_to_device())
     except KeyboardInterrupt:
         print("User Stopped Program")
-
-

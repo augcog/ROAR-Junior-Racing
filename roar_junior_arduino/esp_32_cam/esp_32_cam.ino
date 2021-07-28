@@ -1,3 +1,10 @@
+/**
+ * 1. Install ESP 32 Board (Tools -> Board -> Boards Manager, search for ESP32)
+ * 2. Select AI Thinker ESP32-Cam in the Tools -> Board -> ESP32 Arduino -> AI Thinker ESP32-Cam
+ * 3. Replace WIFI_SSID and WIFI_PASS with your Wifi credentials
+ * 4. Click the upload button
+ */
+
 #include <esp32cam.h>
 #include <WebServer.h>
 #include <WiFi.h>

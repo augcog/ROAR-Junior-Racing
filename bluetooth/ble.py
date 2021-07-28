@@ -16,7 +16,7 @@ def on_roll_char_rx_callback(sender: int, data: bytes):
 class BLEConnection:
     def __init__(self,
                  loop: asyncio.AbstractEventLoop,
-                 device_addr: str,
+                 device_addr: Optional[str] = None,
                  cam_ip_addr: Optional[str] = None,
                  game_rate: float = 0.01,
                  motor_left_tx_uuid: str = "00000000-0000-0000-0000-000000000000",
@@ -147,25 +147,29 @@ class BLEConnection:
 
         while self.should_continue:
             try:
-                if self.is_connected is False:
-                    self.logger.debug(f"Scanning for device with UUID [{self.device_addr}]")
+                if self.device_addr is None:
+                    self.logger.info(f"Scanning for devices")
                     # scan
                     devices: List[BLEDevice] = await discover()
                     # get device name
-                    for device in devices:
-                        if device.address == self.device_addr:
-                            self.device = device
-                            break
-                    if self.device is None:
-                        raise BleakError(f"No Device with Address found {self.device_addr}. "
-                                         f"Please use `scan` to find your device address first")
+                    for i, device in enumerate(devices):
+                        print(f"{i}: ", device.name, "->", device.address)
+                    index = input("Please select a BLE device to connect to: ")
+                    assert index.isdigit(), "Input is not a digit"
+                    index = int(index)
+                    self.device = devices[index]
+                    self.device_addr = self.device.address
 
-                self.logger.info(f"Connecting to {self.device.name}: {self.device_addr}")
+                if self.device_addr is None:
+                    raise BleakError(f"No Device with Address found {self.device_addr}. "
+                                     f"Please use `scan` to find your device address first")
+                self.logger.info(f"Connecting to {self.device_addr}")
                 await self.client.connect()
                 self.is_connected = self.client.is_connected
                 self.client.set_disconnected_callback(self.on_disconnect)
+                print("Disconnection handler attached")
                 if self.is_connected:
-                    self.logger.info(f"Connected to {self.device.name}")
+                    self.logger.info(f"Connected to {self.device_addr}")
 
                     await self.client.start_notify(self.motor_left_rx_uuid, self.motor_left_notify_callback)
                     await self.client.start_notify(self.motor_right_rx_uuid, self.motor_right_notify_callback)
