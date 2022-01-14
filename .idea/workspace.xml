@@ -20,14 +20,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e7e59de-18ee-4bc3-bb3f-db0234b5c47e" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/ROAR-Junior-Racing.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ROAR-Junior-Racing.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/esp_32_cam/esp_32_cam.ino" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/esp_32_cam/esp_32_cam/esp_32_cam.ino" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/esp_32_cam/esp_32_cam_wifi/esp_32_cam_wifi.ino" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/roar_junior_arduino.ino" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/esp32/esp32-cam/esp32-cam.ino" beforeDir="false" afterPath="$PROJECT_DIR$/roar_junior_arduino/esp32/esp32-cam/esp32-cam.ino" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
