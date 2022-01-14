@@ -20,7 +20,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e7e59de-18ee-4bc3-bb3f-db0234b5c47e" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/ROAR-Junior-Racing.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/ROAR-Junior-Racing.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/esp_32_cam/esp_32_cam.ino" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/esp_32_cam/esp_32_cam/esp_32_cam.ino" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/esp_32_cam/esp_32_cam_wifi/esp_32_cam_wifi.ino" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/roar_junior_arduino.ino" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,6 +36,17 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitSEFilterConfiguration">
+    <file-type-list>
+      <filtered-out-file-type name="LOCAL_BRANCH" />
+      <filtered-out-file-type name="REMOTE_BRANCH" />
+      <filtered-out-file-type name="TAG" />
+      <filtered-out-file-type name="COMMIT_BY_MESSAGE" />
+    </file-type-list>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="1vbrDK6cQ2J0urdYZH1gB7z1LQb" />
   <component name="ProjectViewState">
@@ -53,6 +71,7 @@
       <recent name="$PROJECT_DIR$/misc" />
     </key>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="SshConsoleOptionsProvider">
     <option name="myEncoding" value="UTF-8" />
   </component>
@@ -81,7 +100,7 @@
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="2" />
+    <option name="version" value="3" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -93,17 +112,5 @@
         </entry>
       </map>
     </option>
-    <option name="oldMeFiltersMigrated" value="true" />
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="139" y="126" key="SettingsEditor" timestamp="1633475925843">
-      <screen x="0" y="25" width="1440" height="875" />
-    </state>
-    <state x="139" y="126" key="SettingsEditor/0.25.1440.875@0.25.1440.875" timestamp="1633475925843" />
-    <state x="796" y="188" key="SettingsEditor/0.25.2560.1055@0.25.2560.1055" timestamp="1626843437283" />
-    <state x="464" y="259" width="670" height="676" key="search.everywhere.popup" timestamp="1627022083166">
-      <screen x="0" y="25" width="2560" height="1055" />
-    </state>
-    <state x="464" y="259" width="670" height="676" key="search.everywhere.popup/0.25.2560.1055@0.25.2560.1055" timestamp="1627022083166" />
   </component>
 </project>

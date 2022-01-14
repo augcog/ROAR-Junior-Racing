@@ -1,13 +1,6 @@
-/**
- * 1. Install ESP 32 Board (Tools -> Board -> Boards Manager, search for ESP32)
- * 2. Select AI Thinker ESP32-Cam in the Tools -> Board -> ESP32 Arduino -> AI Thinker ESP32-Cam
- * 3. Replace WIFI_SSID and WIFI_PASS with your Wifi credentials
- * 4. Click the upload button
- */
-
-#include <esp32cam.h>
 #include <WebServer.h>
 #include <WiFi.h>
+#include <esp32cam.h>
 
 const char* WIFI_SSID = "NETGEAR78";
 const char* WIFI_PASS = "wuxiaohua1011";
@@ -17,7 +10,94 @@ WebServer server(80);
 static auto loRes = esp32cam::Resolution::find(320, 240);
 static auto hiRes = esp32cam::Resolution::find(800, 600);
 
-void handleBmp()
+#define LEFT_PIN_1 2
+#define LEFT_PIN_2 14
+#define RIGHT_PIN_1 15
+#define RIGHT_PIN_2 13
+
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(LEFT_PIN_1, OUTPUT);
+  pinMode(LEFT_PIN_2, OUTPUT);
+  pinMode(RIGHT_PIN_1, OUTPUT);
+  pinMode(RIGHT_PIN_2, OUTPUT);
+
+  stop();
+
+  setupCamera();
+  setupWiFi();
+}
+
+void loop() {
+  server.handleClient();
+  
+}
+
+
+void turnRight() {
+    digitalWrite(LEFT_PIN_1, 1);
+    digitalWrite(LEFT_PIN_2, 0);
+    digitalWrite(RIGHT_PIN_1, 0);
+    digitalWrite(RIGHT_PIN_2, 1);
+}
+
+void turnLeft() {
+    digitalWrite(LEFT_PIN_1, 0);
+    digitalWrite(LEFT_PIN_2, 1);
+    digitalWrite(RIGHT_PIN_1, 1);
+    digitalWrite(RIGHT_PIN_2, 0);
+}
+
+void forward(){
+    digitalWrite(LEFT_PIN_1, 1);
+    digitalWrite(LEFT_PIN_2, 0);
+    digitalWrite(RIGHT_PIN_1, 1);
+    digitalWrite(RIGHT_PIN_2, 0);
+}
+
+void backward(){
+    digitalWrite(LEFT_PIN_1, 0);
+    digitalWrite(LEFT_PIN_2, 1);
+    digitalWrite(RIGHT_PIN_1, 0);
+    digitalWrite(RIGHT_PIN_2, 1);
+}
+
+void stop() {
+  digitalWrite(LEFT_PIN_1, 0);
+  digitalWrite(LEFT_PIN_2, 0);
+  digitalWrite(RIGHT_PIN_1, 0);
+  digitalWrite(RIGHT_PIN_2, 0);
+}
+
+
+void handleForward() {
+  forward();
+  server.send(200, "text");
+}
+
+void handleBackward() {
+  backward();
+  server.send(200, "text");
+}
+
+void handleStop() {
+  stop();
+  server.send(200, "text");
+}
+
+void handleTurnLeft(){ 
+  turnLeft();
+  server.send(200, "text");
+}
+void handleTurnRight(){ 
+  turnRight();
+  server.send(200, "text");
+}
+
+void
+handleBmp()
 {
   if (!esp32cam::Camera.changeResolution(loRes)) {
     Serial.println("SET-LO-RES FAIL");
@@ -46,7 +126,8 @@ void handleBmp()
   frame->writeTo(client);
 }
 
-void serveJpg()
+void
+serveJpg()
 {
   auto frame = esp32cam::capture();
   if (frame == nullptr) {
@@ -63,7 +144,8 @@ void serveJpg()
   frame->writeTo(client);
 }
 
-void handleJpgLo()
+void
+handleJpgLo()
 {
   if (!esp32cam::Camera.changeResolution(loRes)) {
     Serial.println("SET-LO-RES FAIL");
@@ -71,7 +153,8 @@ void handleJpgLo()
   serveJpg();
 }
 
-void handleJpgHi()
+void
+handleJpgHi()
 {
   if (!esp32cam::Camera.changeResolution(hiRes)) {
     Serial.println("SET-HI-RES FAIL");
@@ -79,13 +162,15 @@ void handleJpgHi()
   serveJpg();
 }
 
-void handleJpg()
+void
+handleJpg()
 {
   server.sendHeader("Location", "/cam-hi.jpg");
   server.send(302, "", "");
 }
 
-void handleMjpeg()
+void
+handleMjpeg()
 {
   if (!esp32cam::Camera.changeResolution(hiRes)) {
     Serial.println("SET-HI-RES FAIL");
@@ -103,12 +188,8 @@ void handleMjpeg()
   Serial.printf("STREAM END %dfrm %0.2ffps\n", res, 1000.0 * res / duration);
 }
 
-void setup()
+void setupCamera() {
 {
-  Serial.begin(115200);
-  Serial.println();
-
-  {
     using namespace esp32cam;
     Config cfg;
     cfg.setPins(pins::AiThinker);
@@ -118,22 +199,28 @@ void setup()
 
     bool ok = Camera.begin(cfg);
     Serial.println(ok ? "CAMERA OK" : "CAMERA FAIL");
-  }
+  }  
+}
 
+void setupWiFi() {
   WiFi.persistent(false);
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
   }
-  Serial.print("IP Addr: ");
+
+  Serial.print("http://");
   Serial.println(WiFi.localIP());
-  
-  Serial.print("Available routes:");
   Serial.println("  /cam.bmp");
   Serial.println("  /cam-lo.jpg");
   Serial.println("  /cam-hi.jpg");
   Serial.println("  /cam.mjpeg");
+  Serial.println("  /forward");
+  Serial.println("  /stop");
+  Serial.println("  /backward");
+  Serial.println("  /turnLeft");
+  Serial.println("  /turnRight");
 
   server.on("/cam.bmp", handleBmp);
   server.on("/cam-lo.jpg", handleJpgLo);
@@ -141,10 +228,11 @@ void setup()
   server.on("/cam.jpg", handleJpg);
   server.on("/cam.mjpeg", handleMjpeg);
 
-  server.begin();
-}
+  server.on("/forward", handleForward);
+  server.on("/backward", handleBackward);
+  server.on("/stop", handleStop);
+  server.on("/turnLeft", handleTurnLeft);
+  server.on("/turnRight", handleTurnRight);
 
-void loop()
-{
-  server.handleClient();
+  server.begin();
 }
