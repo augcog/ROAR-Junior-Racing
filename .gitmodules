@@ -1,0 +1,9 @@
+[submodule "roar_junior_arduino/esp32/esp32-cam/ROAR Junior/lib/AsyncTCP"]
+	path = roar_junior_arduino/esp32/esp32-cam/ROAR Junior/lib/AsyncTCP
+	url = https://github.com/me-no-dev/AsyncTCP.git
+[submodule "roar_junior_arduino/esp32/esp32-cam/ROAR Junior/lib/ESPAsyncWebServer"]
+	path = roar_junior_arduino/esp32/esp32-cam/ROAR Junior/lib/ESPAsyncWebServer
+	url = https://github.com/me-no-dev/ESPAsyncWebServer
+[submodule "roar_junior_arduino/esp32/esp32-cam/ROAR Junior/lib/esp32cam"]
+	path = roar_junior_arduino/esp32/esp32-cam/ROAR Junior/lib/esp32cam
+	url = https://github.com/espressif/esp32-camera.git
