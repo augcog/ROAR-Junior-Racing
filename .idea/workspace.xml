@@ -20,9 +20,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9e7e59de-18ee-4bc3-bb3f-db0234b5c47e" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/roar_junior_arduino/esp32/esp32-cam/esp32-cam.ino" beforeDir="false" afterPath="$PROJECT_DIR$/roar_junior_arduino/esp32/esp32-cam/esp32-cam.ino" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -44,6 +44,7 @@
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="1vbrDK6cQ2J0urdYZH1gB7z1LQb" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -91,6 +92,12 @@
       <workItem from="1627274075063" duration="2676000" />
       <workItem from="1627438496752" duration="1416000" />
       <workItem from="1633474837985" duration="899000" />
+      <workItem from="1642202923357" duration="4002000" />
+      <workItem from="1642278727483" duration="865000" />
+      <workItem from="1642463933252" duration="911000" />
+      <workItem from="1642665724888" duration="2383000" />
+      <workItem from="1642822461475" duration="29000" />
+      <workItem from="1642822514357" duration="10825000" />
     </task>
     <servers />
   </component>

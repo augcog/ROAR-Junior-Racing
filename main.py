@@ -6,18 +6,26 @@ import threading
 
 
 def executeCommand(addr: str, cmd: str = "stop"):
-    requests.get(f"http://{addr}/{cmd}")
-    print(cmd)
+    try:
+        requests.get(f"http://{addr}/{cmd}")
+        print(cmd)
+    except requests.exceptions.Timeout or requests.exceptions.ConnectionError:
+        print(f"command for {cmd} timed out")
 
 
-host = "192.168.1.31"
+host = "192.168.1.24"
 
 while True:
-    response = requests.get(f"http://{host}/cam-lo.jpg")
-    jpg = response.content
-    image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
     try:
-        cv2.imshow('ESP32 camera', image)
+        response = requests.get(f"http://{host}/cam-lo.jpg", timeout=0.5)
+        jpg = response.content
+        image = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+        try:
+            cv2.imshow('ESP32 camera', image)
+        except Exception as e:
+            print(e)
+    except requests.exceptions.Timeout or requests.exceptions.ConnectionError:
+        print("Video Frame Timed out")
     except Exception as e:
         print(e)
 
