@@ -279,7 +279,7 @@ void setupWiFi() {
                   }
                 }
                 request->send(200, "text/plain", 
-                    "{distance:" + String(pullUltrasonicReading()) + "}"
+                    String(pullUltrasonicReading())
                   );
               });
 
